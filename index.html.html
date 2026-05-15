@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>අතළඟ | Online Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap');
+        
+        body { 
+            font-family: 'Poppins', 'Abhaya Libre', sans-serif; 
+            background-color: #f8fafc; 
+        }
+        
+        .hero-bg {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .product-card { 
+            transition: all 0.3s ease; 
+        }
+        .product-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        }
+        
+        /* Smooth scrolling for category bars */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+<div id="customer-view">
+    <header class="hero-bg text-white py-20 px-6 text-center shadow-lg relative">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-6xl md:text-7xl font-extrabold mb-3 tracking-wide drop-shadow-md">අතළඟ</h1>
+            <p class="text-xl md:text-2xl font-light opacity-90 drop-shadow-sm">Online Marketplace — ඔබේ ළඟටම එන විශ්වාසනීය සේවාව</p>
+        </div>
+    </header>
+
+    <div class="max-w-5xl mx-auto -mt-10 px-4 relative z-10">
+        <div class="bg-white p-3 rounded-2xl shadow-xl flex items-center border border-gray-100">
+            <div class="flex-grow flex items-center pl-4">
+                <svg class="h-6 w-6 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="ඔබට අවශ්‍ය දේ මෙතන සොයන්න..." class="w-full py-2 outline-none text-gray-700 font-medium">
+            </div>
+            <button onclick="searchProducts()" class="bg-orange-500 text-white px-8 py-3 rounded-xl font-bold tracking-wide hover:bg-orange-600 transition shadow-md">සොයන්න</button>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-6 mt-8 flex justify-center">
+        <button onclick="contactToSell()" class="bg-blue-600 text-white font-bold px-8 py-4 rounded-2xl shadow-lg hover:bg-blue-700 transition-all flex items-center">
+            <svg class="h-6 w-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            ඔබේ භාණ්ඩයක් විකුණා ගැනීමට අවශ්‍යද? (Contact to Sell)
+        </button>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-6 mt-8">
+        <div class="flex space-x-3 overflow-x-auto py-2 hide-scrollbar">
+            <button onclick="filterCategory('All')" class="category-btn bg-orange-500 text-white font-semibold px-6 py-2.5 rounded-full shadow transition-all whitespace-nowrap">සියල්ල (All)</button>
+            <button onclick="filterCategory('Kitchen')" class="category-btn bg-white text-gray-700 hover:bg-orange-50 font-semibold px-6 py-2.5 rounded-full shadow-sm border border-gray-100 transition-all whitespace-nowrap">කුස්සියට (Kitchen)</button>
+            <button onclick="filterCategory('Electronics')" class="category-btn bg-white text-gray-700 hover:bg-orange-50 font-semibold px-6 py-2.5 rounded-full shadow-sm border border-gray-100 transition-all whitespace-nowrap">ඉලෙක්ට්‍රොනික (Electronics)</button>
+            <button onclick="filterCategory('Beauty')" class="category-btn bg-white text-gray-700 hover:bg-orange-50 font-semibold px-6 py-2.5 rounded-full shadow-sm border border-gray-100 transition-all whitespace-nowrap">රූපලාවන්‍ය (Beauty)</button>
+            <button onclick="filterCategory('Home Decor')" class="category-btn bg-white text-gray-700 hover:bg-orange-50 font-semibold px-6 py-2.5 rounded-full shadow-sm border border-gray-100 transition-all whitespace-nowrap">ගෘහ අලංකරණ (Home Decor)</button>
+        </div>
+    </div>
+
+    <main class="max-w-6xl mx-auto p-6 min-h-screen">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="product-list-container">
+            </div>
+    </main>
+</div>
+
+<div id="product-detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative">
+        <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-gray-100 text-gray-800 hover:bg-gray-200 h-10 w-10 rounded-full flex items-center justify-center font-bold text-xl z-10 shadow">×</button>
+        
+        <div class="p-6">
+            <h2 id="modal-item-title" class="text-2xl font-bold text-gray-900 mb-4 pr-10">Product Title</h2>
+            
+            <div class="flex space-x-2 overflow-x-auto pb-4 hide-scrollbar snap-x" id="modal-image-gallery">
+                </div>
+
+            <div id="modal-video-container" class="my-4 hidden">
+                <p class="text-sm font-semibold text-gray-600 mb-2 flex items-center">
+                    <svg class="h-4 w-4 text-red-600 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    භාණ්ඩයේ වීඩියෝව (Product Video):
+                </p>
+                <div class="relative pt-[56.25%] rounded-xl overflow-hidden bg-black shadow-inner">
+                    <iframe id="modal-iframe" class="absolute inset-0 w-full h-full border-0" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <div class="bg-orange-50 p-4 rounded-xl my-4">
+                <div id="modal-item-price" class="text-2xl font-bold text-orange-600">Rs. 0.00</div>
+                <div class="text-xs text-gray-500 font-medium">දිවයින පුරා නිවසටම ප්‍රවාහනය (Island-wide Delivery)</div>
+                <p id="modal-item-details" class="text-gray-700 text-sm mt-3 leading-relaxed border-t border-orange-200 pt-2">Description details go here...</p>
+            </div>
+
+            <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 mt-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center">
+                    <svg class="h-5 w-5 text-orange-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    ඇණවුම් පෝරමය (Order Form)
+                </h3>
+                <div class="space-y-3">
+                    <input type="text" id="order-name" placeholder="ඔබේ නම (Full Name) *" class="w-full border border-gray-300 p-3 rounded-xl outline-none focus:border-orange-500 bg-white">
+                    <input type="text" id="order-address" placeholder="ලිපිනය (Delivery Address) *" class="w-full border border-gray-300 p-3 rounded-xl outline-none focus:border-orange-500 bg-white">
+                    <input type="text" id="order-city" placeholder="නගරය (City) *" class="w-full border border-gray-300 p-3 rounded-xl outline-none focus:border-orange-500 bg-white">
+                    <input type="tel" id="order-phone" placeholder="දුරකථන අංකය (Phone Number) *" class="w-full border border-gray-300 p-3 rounded-xl outline-none focus:border-orange-500 bg-white">
+                    <input type="tel" id="order-whatsapp" placeholder="WhatsApp Number (තිබේ නම්)" class="w-full border border-gray-300 p-3 rounded-xl outline-none focus:border-orange-500 bg-white">
+                    
+                    <button onclick="submitOrder()" class="w-full bg-emerald-500 text-white py-4 rounded-xl font-bold tracking-wide text-lg shadow-lg hover:bg-emerald-600 transition flex items-center justify-center">
+                        <svg class="h-6 w-6 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.971 0c3.178.001 6.165 1.24 8.413 3.488 2.248 2.248 3.487 5.234 3.486 8.413-.003 6.657-5.353 12-11.916 12-2.004-.001-3.973-.51-5.716-1.486L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.963C16.528 1.981 14.062.96 11.435.96c-5.437 0-9.863 4.374-9.867 9.803-.001 1.73.457 3.419 1.323 4.921l-1.082 3.954 4.051-1.062z"/></svg>
+                        Done - Order via WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-8 rounded-2xl w-full max-w-sm shadow-2xl">
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">ඇතුල්වීමේ පෝරමය</h2>
+        <p class="text-sm text-gray-500 mb-6">පරිපාලක (Admin) සඳහා පමණි.</p>
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-600 block mb-1">Username</label>
+                <input type="text" id="admin-user" class="w-full border p-3 rounded-xl outline-none focus:border-black">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-600 block mb-1">Password</label>
+                <input type="password" id="admin-pass" class="w-full border p-3 rounded-xl outline-none focus:border-black">
+            </div>
+            <button onclick="checkLogin()" class="w-full bg-black text-white py-3 rounded-xl font-bold hover:bg-gray-900 transition shadow">Login</button>
+            <button onclick="closeLoginModal()" class="w-full text-sm text-gray-500 font-medium hover:underline py-1">වසා දමන්න (Close)</button>
+        </div>
+    </div>
+</div>
+
+<div id="admin-dashboard-view" class="hidden fixed inset-0 bg-gray-50 overflow-y-auto p-4 md:p-10 z-50">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900 flex items-center">
+                    <span class="bg-orange-500 h-8 w-2 rounded mr-3"></span>
+                    අතළඟ Admin Dashboard
+                </h1>
+                <p class="text-sm text-gray-500 mt-1">Logged in as: <span class="font-bold text-gray-800" id="current-user-lbl">Dana</span></p>
+            </div>
+            <button onclick="logoutAdmin()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-md">Dashboard එකෙන් ඉවත් වන්න (Logout)</button>
+        </div>
+        
+        <div class="grid lg:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-1 h-fit">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b">නව භාණ්ඩයක් ඇතුළත් කරන්න</h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">භාණ්ඩයේ නම (Item Name) *</label>
+                        <input type="text" id="form-item-name" placeholder="eg: Mini Vegetable Chopper" class="w-full border p-3 rounded-xl outline-none bg-gray-50 focus:bg-white border-gray-200">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">මිල (Price - Rs.) *</label>
+                        <input type="text" id="form-item-price" placeholder="eg: Rs. 1,450" class="w-full border p-3 rounded-xl outline-none bg-gray-50 focus:bg-white border-gray-200">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">මෙම ඇණවුම ලැබිය යුතු WhatsApp අංකය (Contact WhatsApp) *</label>
+                        <input type="tel" id="form-item-wa-direct" placeholder="eg: 94742517405" class="w-full border p-3 rounded-xl outline-none bg-orange-50 focus:bg-white border-orange-200 font-bold">
+                    </div>
+                    <div>
+    <label class="text-xs font-bold text-gray-600 block mb-1">වර්ගීකරණය (Category) *</label>
+    <input type="text" id="form-item-category" list="hot-categories" placeholder="eg: Gadgets / Fashion" class="w-full border p-3 rounded-xl outline-none bg-gray-50 focus:bg-white border-gray-200">
+    
+    <datalist id="hot-categories">
+        <option value="Gadgets & Tech">
+        <option value="Home & Lifestyle">
+        <option value="Health & Wellness">
+        <option value="Fashion & Personal Care">
+        <option value="Baby & Kids">
+        <option value="Pet Care">
+        <option value="Stationery & Gifts">
+        <option value="Kitchen">
+        <option value="Electronics">
+        <option value="Beauty">
+        <option value="Home Decor">
+    </datalist>
+</div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">ප්‍රධාන ඡායාරූපය (Main Image URL) *</label>
+                        <input type="text" id="form-item-img1" placeholder="https://images.unsplash.com/..." class="w-full border p-2.5 rounded-xl outline-none text-xs bg-gray-50 border-gray-200">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 block mb-1">අතිරේක ඡායාරූප (Optional URL 2-5)</label>
+                        <input type="text" id="form-item-img2" placeholder="Image URL 2" class="w-full border p-2.5 rounded-xl outline-none text-xs bg-gray-50 border-gray-200 mb-1">
+                        <input type="text" id="form-item-img3" placeholder="Image URL 3" class="w-full border p-2.5 rounded-xl outline-none text-xs bg-gray-50 border-gray-200 mb-1">
+                        <input type="text" id="form-item-img4" placeholder="Image URL 4" class="w-full border p-2.5 rounded-xl outline-none text-xs bg-gray-50 border-gray-200 mb-1">
+                        <input type="text" id="form-item-img5" placeholder="Image URL 5" class="w-full border p-2.5 rounded-xl outline-none text-xs bg-gray-50 border-gray-200">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">YouTube Video Link (Optional)</label>
+                        <input type="text" id="form-item-youtube" placeholder="eg: https://www.youtube.com/watch?v=..." class="w-full border p-3 rounded-xl outline-none bg-gray-50 border-gray-200">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">විස්තර (Detailed Description)</label>
+                        <textarea id="form-item-desc" rows="4" placeholder="භාණ්ඩය පිළිබඳ විස්තර මෙතන ලියන්න..." class="w-full border p-3 rounded-xl outline-none bg-gray-50 border-gray-200 text-sm"></textarea>
+                    </div>
+                    <button onclick="saveNewProduct()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl shadow transition">භාණ්ඩය ඇතුළත් කරන්න (Save Product)</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b">දැනට පවතින නිෂ්පාදන (Active Inventory)</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="border-b text-gray-400 font-medium">
+                                    <th class="py-2">Image</th>
+                                    <th class="py-2">Item Name</th>
+                                    <th class="py-2">Category</th>
+                                    <th class="py-2">Price</th>
+                                    <th class="py-2 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-inventory-table">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b">ලැබුණු ඇණවුම් ලේඛනය (Received Orders)</h2>
+                    <div class="space-y-4" id="admin-orders-container">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button onclick="openLoginModal()" class="fixed bottom-6 right-6 bg-slate-900 hover:bg-black text-white px-5 py-3 rounded-full shadow-2xl font-bold tracking-wide transition flex items-center z-40 text-sm">
+    <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+    Admin Panel
+</button>
+
+<script>
+    // System Core Configurations
+    const DEFAULT_WHATSAPP_PHONE = "94742517405";
+    let selectedProductIndex = null;
+    let currentCategoryFilter = "All";
+
+    // Initial Data Set - Seed sample data if local database is empty
+    const defaultProducts = [
+        {
+            name: "Mini Vegetable Chopper (Rechargeable)",
+            price: "Rs. 1,450",
+            category: "Kitchen",
+            whatsapp: "94742517405",
+            images: [
+                "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=500",
+                "https://images.unsplash.com/photo-1596436889106-be35e843f974?w=500"
+            ],
+            youtube: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            desc: "USB මඟින් පහසුවෙන් චාර්ජ් කර පාවිච්චි කල හැකි කුඩා එළවළු මෙන්ම ළූණු කපනයකි. ගෘහණියන්ගේ කුස්සියේ වැඩ පහසු කිරීමට කදිමයි."
+        },
+        {
+            name: "LED Professional Ring Light 10 Inch",
+            price: "Rs. 2,800",
+            category: "Electronics",
+            whatsapp: "94742517405",
+            images: [
+                "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?w=500",
+                "https://images.unsplash.com/photo-1619551483344-fbb9f211b85e?w=500"
+            ],
+            youtube: "",
+            desc: "TikTok, YouTube, Facebook Reels වීඩියෝ කරන අයට මුහුණ පැහැදිලිව ආලෝකමත් කරගැනීමට ලැබෙන විශිෂ්ට Ring light එකක්. මට්ටම් 3ක ආලෝක පාලනයක් ඇත."
+        },
+        {
+            name: "Aesthetic Scented Soy Candle Pack",
+            price: "Rs. 950",
+            category: "Home Decor",
+            whatsapp: "94742517405",
+            images: [
+                "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=500"
+            ],
+            youtube: "",
+            desc: "කාමරයේ සුන්දරත්වය මෙන්ම ඉතා සුවඳවත් වටපිටාවක් නිර්මාණය කරන ස්වභාවික සෝයා ඉටි මඟින් නිපදවූ ඉටිපන්දම් කට්ටලයකි."
+        }
+    ];
+
+    const defaultOrders = [
+        {
+            id: "ORD-9481",
+            item: "Mini Vegetable Chopper (Rechargeable)",
+            price: "Rs. 1,450",
+            name: "Kamal Perera",
+            address: "No 45, Temple Road",
+            city: "Colombo 07",
+            phone: "0771234567",
+            whatsapp: "0771234567",
+            status: "Pending"
+        }
+    ];
+
+    // Read and Write Controllers to Synchronize Database with Browser Cache
+    function getProductsDB() {
+        if (!localStorage.getItem("atalanga_products")) {
+            localStorage.setItem("atalanga_products", JSON.stringify(defaultProducts));
+        }
+        return JSON.stringify(localStorage.getItem("atalanga_products")) === "[]" ? [] : JSON.parse(localStorage.getItem("atalanga_products"));
+    }
+
+    function saveProductsDB(arr) {
+        localStorage.setItem("atalanga_products", JSON.stringify(arr));
+    }
+
+    function getOrdersDB() {
+        if (!localStorage.getItem("atalanga_orders")) {
+            localStorage.setItem("atalanga_orders", JSON.stringify(defaultOrders));
+        }
+        return JSON.parse(localStorage.getItem("atalanga_orders"));
+    }
+
+    function saveOrdersDB(arr) {
+        localStorage.setItem("atalanga_orders", JSON.stringify(arr));
+    }
+
+    // App Initialization Hook
+    window.onload = function() {
+        renderMarketplace();
+    };
+
+    // New Function: Contact to Sell
+    function contactToSell() {
+        const sellMsg = `*අතළඟ (Atalanga) - භාණ්ඩ විකිණීමේ විමසීම*%0A` +
+                        `-------------------------------------------%0A` +
+                        `මගේ භාණ්ඩයක් ඔබගේ වෙබ් අඩවියේ විකුණා ගැනීමට අවශ්‍යයි. කරුණාකර වැඩි විස්තර ලබා දෙන්න.`;
+        window.open(`https://wa.me/${DEFAULT_WHATSAPP_PHONE}?text=${sellMsg}`, '_blank');
+    }
+
+    // Render Products on Frontend
+    function renderMarketplace() {
+        const products = getProductsDB();
+        const container = document.getElementById("product-list-container");
+        container.innerHTML = "";
+
+        products.forEach((prod, index) => {
+            // Apply category filter logic
+            if (currentCategoryFilter !== "All" && prod.category !== currentCategoryFilter) return;
+
+            const card = document.createElement("div");
+            card.className = "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden product-card cursor-pointer flex flex-col justify-between";
+            card.setAttribute("onclick", `openProductModal(${index})`);
+
+            const mainImg = (prod.images && prod.images[0]) ? prod.images[0] : "https://via.placeholder.com/400x300?text=No+Photo";
+
+            card.innerHTML = `
+                <div>
+                    <div class="w-full h-44 bg-gray-100 overflow-hidden relative">
+                        <img src="${mainImg}" alt="${prod.name}" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-black bg-opacity-60 text-white text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold">${prod.category}</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 text-sm md:text-base line-clamp-2">${prod.name}</h3>
+                    </div>
+                </div>
+                <div class="px-4 pb-4">
+                    <p class="text-orange-500 font-extrabold text-lg md:text-xl">${prod.price}</p>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        if (container.innerHTML === "") {
+            container.innerHTML = `<div class="col-span-4 text-center text-gray-400 py-10 font-medium">මෙම වර්ගීකරණය යටතේ භාණ්ඩ දැනට නොමැත.</div>`;
+        }
+    }
+
+    // Category Selector
+    function filterCategory(catName) {
+        currentCategoryFilter = catName;
+        const buttons = document.querySelectorAll(".category-btn");
+        buttons.forEach(btn => {
+            btn.classList.remove("bg-orange-500", "text-white", "shadow");
+            btn.classList.add("bg-white", "text-gray-700", "border-gray-100");
+            if (btn.innerText.includes(catName) || (catName === "All" && btn.innerText.includes("සියල්ල"))) {
+                btn.classList.add("bg-orange-500", "text-white", "shadow");
+                btn.classList.remove("bg-white", "text-gray-700");
+            }
+        });
+        renderMarketplace();
+    }
+
+    // Live Instant Search Bar Filter
+    function searchProducts() {
+        const query = document.getElementById("search-input").value.toLowerCase();
+        const products = getProductsDB();
+        const container = document.getElementById("product-list-container");
+        container.innerHTML = "";
+
+        products.forEach((prod, index) => {
+            if (!prod.name.toLowerCase().includes(query) && !prod.desc.toLowerCase().includes(query)) return;
+
+            const card = document.createElement("div");
+            card.className = "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden product-card cursor-pointer flex flex-col justify-between";
+            card.setAttribute("onclick", `openProductModal(${index})`);
+            const mainImg = (prod.images && prod.images[0]) ? prod.images[0] : "https://via.placeholder.com/400x300?text=No+Photo";
+
+            card.innerHTML = `
+                <div>
+                    <div class="w-full h-44 bg-gray-100 overflow-hidden relative">
+                        <img src="${mainImg}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 text-sm md:text-base line-clamp-2">${prod.name}</h3>
+                    </div>
+                </div>
+                <div class="px-4 pb-4">
+                    <p class="text-orange-500 font-extrabold text-lg md:text-xl">${prod.price}</p>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // Open Product Deep Detailed Modal View
+    function openProductModal(index) {
+        const products = getProductsDB();
+        const prod = products[index];
+        selectedProductIndex = index;
+
+        document.getElementById("modal-item-title").innerText = prod.name;
+        document.getElementById("modal-item-price").innerText = prod.price;
+        document.getElementById("modal-item-details").innerText = prod.desc || "විස්තර ඇතුළත් කර නොමැත.";
+
+        // Populate Images Grid up to 5 pictures
+        const gallery = document.getElementById("modal-image-gallery");
+        gallery.innerHTML = "";
+        
+        let validImages = prod.images ? prod.images.filter(url => url && url.trim() !== "") : [];
+        if (validImages.length === 0) validImages.push("https://via.placeholder.com/400x400?text=No+Photo");
+
+        validImages.forEach(imgUrl => {
+            const imgTag = document.createElement("img");
+            imgTag.src = imgUrl;
+            imgTag.className = "w-64 h-64 object-cover rounded-xl snap-center border border-gray-100 flex-shrink-0 shadow-sm";
+            gallery.appendChild(imgTag);
+        });
+
+        // Parse & Load YouTube Video Iframe Embedded securely 
+        const videoSection = document.getElementById("modal-video-container");
+        const iframe = document.getElementById("modal-iframe");
+        
+        if (prod.youtube && prod.youtube.trim() !== "") {
+            let videoId = "";
+            if (prod.youtube.includes("v=")) {
+                videoId = prod.youtube.split("v=")[1].split("&")[0];
+            } else if (prod.youtube.includes("youtu.be/")) {
+                videoId = prod.youtube.split("youtu.be/")[1].split("?")[0];
+            }
+            
+            if (videoId) {
+                iframe.src = `https://www.youtube.com/embed/${videoId}`;
+                videoSection.classList.remove("hidden");
+            } else {
+                videoSection.classList.add("hidden");
+            }
+        } else {
+            videoSection.classList.add("hidden");
+            iframe.src = "";
+        }
+
+        document.getElementById("product-detail-modal").classList.remove("hidden");
+    }
+
+    function closeProductModal() {
+        document.getElementById("product-detail-modal").classList.add("hidden");
+        document.getElementById("modal-iframe").src = ""; // Stop audio playing
+    }
+
+    // Submit Order Form Action Controller
+    function submitOrder() {
+        const name = document.getElementById("order-name").value.trim();
+        const address = document.getElementById("order-address").value.trim();
+        const city = document.getElementById("order-city").value.trim();
+        const phone = document.getElementById("order-phone").value.trim();
+        const whatsapp = document.getElementById("order-whatsapp").value.trim();
+
+        if (!name || !address || !city || !phone) {
+            alert("කරුණාකර තරුව (*) සලකුණු කර ඇති අත්‍යවශ්‍ය තොරතුරු සියල්ල ඇතුළත් කරන්න.");
+            return;
+        }
+
+        const products = getProductsDB();
+        const orderedItem = products[selectedProductIndex];
+
+        // Custom Logic: Determine target WhatsApp number for this product
+        const targetWhatsApp = (orderedItem.whatsapp && orderedItem.whatsapp.trim() !== "") ? orderedItem.whatsapp : DEFAULT_WHATSAPP_PHONE;
+
+        // Unique identification generation 
+        const orderId = "ORD-" + Math.floor(1000 + Math.random() * 9000);
+
+        // Store internally inside dashboard structure 
+        const newOrder = {
+            id: orderId,
+            item: orderedItem.name,
+            price: orderedItem.price,
+            name: name,
+            address: address,
+            city: city,
+            phone: phone,
+            whatsapp: whatsapp || "නොමැත",
+            status: "Pending"
+        };
+
+        const currentOrders = getOrdersDB();
+        currentOrders.push(newOrder);
+        saveOrdersDB(currentOrders);
+
+        // Build elegant WhatsApp Text Message 
+        const msgStr = `*අතළඟ (Atalanga) - නව ඇණවුම*%0A` +
+                       `-------------------------------------------%0A` +
+                       `*ඇණවුම් අංකය:* ${orderId}%0A` +
+                       `*භාණ්ඩය:* ${orderedItem.name}%0A` +
+                       `*මිල:* ${orderedItem.price}%0A%0A` +
+                       `*පාරිභෝගික විස්තර:*%0A` +
+                       `• නම: ${name}%0A` +
+                       `• ලිපිනය: ${address}%0A` +
+                       `• නගරය: ${city}%0A` +
+                       `• දුරකථන අංකය: ${phone}%0A` +
+                       `• WhatsApp අංකය: ${whatsapp || "නොමැත"}%0A` +
+                       `-------------------------------------------%0A` +
+                       `ස්තූතියි!`;
+
+        // Redirect seamlessly to API interface
+        window.open(`https://wa.me/${targetWhatsApp}?text=${msgStr}`, '_blank');
+        
+        // Reset and wrap up modal
+        document.getElementById("order-name").value = "";
+        document.getElementById("order-address").value = "";
+        document.getElementById("order-city").value = "";
+        document.getElementById("order-phone").value = "";
+        document.getElementById("order-whatsapp").value = "";
+        closeProductModal();
+        alert("ඔබේ ඇණවුම සාර්ථකව පද්ධතියට ලැබුණා! දැන් WhatsApp මඟින් තහවුරු කරන්න.");
+    }
+
+    // --- ADMIN SUBSYSTEM OPERATIONS ---
+    function openLoginModal() { document.getElementById("login-modal").classList.remove("hidden"); }
+    function closeLoginModal() { document.getElementById("login-modal").classList.add("hidden"); }
+
+    function checkLogin() {
+        const u = document.getElementById("admin-user").value.trim();
+        const p = document.getElementById("admin-pass").value.trim();
+
+        if (u === "Dana" && p === "113") {
+            closeLoginModal();
+            document.getElementById("customer-view").classList.add("hidden");
+            document.getElementById("admin-dashboard-view").classList.remove("hidden");
+            renderAdminDashboard();
+        } else {
+            alert("පරිපාලක පරිශීලක නාමය හෝ මුරපදය වැරදියි! (Invalid Login Credentials)");
+        }
+    }
+
+    function logoutAdmin() {
+        document.getElementById("admin-dashboard-view").classList.add("hidden");
+        document.getElementById("customer-view").classList.remove("hidden");
+        document.getElementById("admin-user").value = "";
+        document.getElementById("admin-pass").value = "";
+    }
+
+    // Render Admin Control Dashboard Tables
+    function renderAdminDashboard() {
+        // Render Active Stock Management Table Row Blocks
+        const products = getProductsDB();
+        const inventoryTable = document.getElementById("admin-inventory-table");
+        inventoryTable.innerHTML = "";
+
+        products.forEach((prod, idx) => {
+            const tr = document.createElement("tr");
+            tr.className = "border-b text-sm text-gray-700 hover:bg-gray-50";
+            const mainImg = (prod.images && prod.images[0]) ? prod.images[0] : "https://via.placeholder.com/50?text=No+Photo";
+
+            tr.innerHTML = `
+                <td class="py-3"><img src="${mainImg}" class="h-10 w-10 object-cover rounded-md"></td>
+                <td class="py-3 font-semibold">${prod.name}</td>
+                <td class="py-3 text-xs text-gray-500 font-bold">${prod.category}</td>
+                <td class="py-3 text-orange-600 font-bold">${prod.price}</td>
+                <td class="py-3 text-right">
+                    <button onclick="deleteProduct(${idx})" class="bg-red-50 text-red-600 border border-red-200 px-3 py-1 rounded-lg font-bold hover:bg-red-500 hover:text-white transition">Delete</button>
+                </td>
+            `;
+            inventoryTable.appendChild(tr);
+        });
+
+        // Render Received Customer Orders Feed
+        const orders = getOrdersDB();
+        const ordersContainer = document.getElementById("admin-orders-container");
+        ordersContainer.innerHTML = "";
+
+        if(orders.length === 0) {
+            ordersContainer.innerHTML = `<p class="text-gray-400 text-center py-4">තවමත් ඇණවුම් කිසිවක් ලැබී නොමැත.</p>`;
+        }
+
+        orders.forEach((ord, idx) => {
+            const ordBox = document.createElement("div");
+            ordBox.className = `p-4 rounded-xl border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white ${ord.status === 'Shipped' ? 'border-gray-200 opacity-60' : 'border-orange-200 bg-orange-50/20'}`;
+            
+            ordBox.innerHTML = `
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-bold bg-gray-200 text-gray-800 px-2 py-0.5 rounded">${ord.id}</span>
+                        <h4 class="font-bold text-gray-900">${ord.item} (${ord.price})</h4>
+                    </div>
+                    <p class="text-sm"><strong>පාරිභෝගිකයා:</strong> ${ord.name} | <strong>දුරකථනය:</strong> ${ord.phone}</p>
+                    <p class="text-xs text-gray-500"><strong>ලිපිනය:</strong> ${ord.address}, ${ord.city} | <strong>WhatsApp:</strong> ${ord.whatsapp}</p>
+                    <span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded ${ord.status === 'Shipped' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${ord.status}</span>
+                </div>
+                <div class="flex space-x-2 w-full md:w-auto justify-end">
+                    ${ord.status === 'Pending' ? `<button onclick="markAsShipped(${idx})" class="bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-600 shadow">Mark Shipped</button>` : ''}
+                    <button onclick="deleteOrder(${idx})" class="bg-gray-100 text-gray-600 text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-red-500 hover:text-white">Delete</button>
+                </div>
+            `;
+            ordersContainer.appendChild(ordBox);
+        });
+    }
+
+    // Save/Add New Stock Product Submission Form Handler
+    function saveNewProduct() {
+        const name = document.getElementById("form-item-name").value.trim();
+        const price = document.getElementById("form-item-price").value.trim();
+        const category = document.getElementById("form-item-category").value.trim(); 
+        const whatsapp = document.getElementById("form-item-wa-direct").value.trim(); // New Custom WhatsApp Field
+        const desc = document.getElementById("form-item-desc").value.trim();
+        const youtube = document.getElementById("form-item-youtube").value.trim();
+
+        const images = [
+            document.getElementById("form-item-img1").value.trim(),
+            document.getElementById("form-item-img2").value.trim(),
+            document.getElementById("form-item-img3").value.trim(),
+            document.getElementById("form-item-img4").value.trim(),
+            document.getElementById("form-item-img5").value.trim()
+        ].filter(url => url !== "");
+
+        if (!name || !price || !category || images.length === 0) {
+            alert("කරුණාකර නම, මිල, වර්ගීකරණය සහ අවම වශයෙන් එක් පින්තූරයක්වත් ලබා දෙන්න.");
+            return;
+        }
+
+        const newProd = { name, price, category, whatsapp, images, youtube, desc };
+        const currentProducts = getProductsDB();
+        currentProducts.push(newProd);
+        saveProductsDB(currentProducts);
+
+        // Form එක Reset කිරීම
+        document.getElementById("form-item-name").value = "";
+        document.getElementById("form-item-price").value = "";
+        document.getElementById("form-item-category").value = "";
+        document.getElementById("form-item-wa-direct").value = "";
+        document.getElementById("form-item-desc").value = "";
+        document.getElementById("form-item-youtube").value = "";
+        document.getElementById("form-item-img1").value = "";
+        document.getElementById("form-item-img2").value = "";
+        document.getElementById("form-item-img3").value = "";
+        document.getElementById("form-item-img4").value = "";
+        document.getElementById("form-item-img5").value = "";
+        
+        alert("භාණ්ඩය සාර්ථකව පද්ධතියට එක් කළා!");
+        renderAdminDashboard();
+        renderMarketplace();
+    }
+
+    // Inventory Product Deletion Control
+    function deleteProduct(index) {
+        if (confirm("මෙම භාණ්ඩය ස්ථිරවම ඉවත් කිරීමට අවශ්‍යද?")) {
+            const currentProducts = getProductsDB();
+            currentProducts.splice(index, 1);
+            saveProductsDB(currentProducts);
+            renderAdminDashboard();
+            renderMarketplace();
+        }
+    }
+
+    // Order Fulfillment Status Update Controls
+    function markAsShipped(index) {
+        const currentOrders = getOrdersDB();
+        currentOrders[index].status = "Shipped";
+        saveOrdersDB(currentOrders);
+        renderAdminDashboard();
+    }
+
+    // Order Log Entry Deletion Controls
+    function deleteOrder(index) {
+        if (confirm("මෙම ඇණවුම් දත්තය පද්ධතියෙන් ස්ථිරවම ඉවත් කරන්නද?")) {
+            const currentOrders = getOrdersDB();
+            currentOrders.splice(index, 1);
+            saveOrdersDB(currentOrders);
+            renderAdminDashboard();
+        }
+    }
+</script>
+</body>
+</html>
