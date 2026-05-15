@@ -276,43 +276,13 @@
     let selectedProductIndex = null;
     let currentCategoryFilter = "All";
 
-    // Global Data Arrays (Synced with Firebase)
+    // Global Data Arrays (Synced with Firebase - completely replacing Local Storage)
     let appProducts = [];
     let appOrders = [];
 
-    // Initial Data Set (Used only if Firebase DB is completely empty)
-    const defaultProducts = [
-        {
-            name: "Mini Vegetable Chopper (Rechargeable)",
-            price: "Rs. 1,450",
-            category: "Kitchen",
-            whatsapp: "94742517405",
-            images: [
-                "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=500",
-                "https://images.unsplash.com/photo-1596436889106-be35e843f974?w=500"
-            ],
-            youtube: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            desc: "USB මඟින් පහසුවෙන් චාර්ජ් කර පාවිච්චි කල හැකි කුඩා එළවළු මෙන්ම ළූණු කපනයකි. ගෘහණියන්ගේ කුස්සියේ වැඩ පහසු කිරීමට කදිමයි."
-        }
-    ];
-
-    const defaultOrders = [
-        {
-            id: "ORD-9481",
-            item: "Mini Vegetable Chopper (Rechargeable)",
-            price: "Rs. 1,450",
-            name: "Kamal Perera",
-            address: "No 45, Temple Road",
-            city: "Colombo 07",
-            phone: "0771234567",
-            whatsapp: "0771234567",
-            status: "Pending"
-        }
-    ];
-
-    // --- FIREBASE SYNC FUNCTIONS (Replacing Local Storage) ---
+    // --- FIREBASE SYNC FUNCTIONS ---
     function getProductsDB() {
-        return appProducts || [];
+        return appProducts;
     }
 
     function saveProductsDB(arr) {
@@ -320,7 +290,7 @@
     }
 
     function getOrdersDB() {
-        return appOrders || [];
+        return appOrders;
     }
 
     function saveOrdersDB(arr) {
@@ -328,41 +298,38 @@
     }
 
     // App Initialization Hook (Realtime Listeners)
-    let isInitialProductLoad = true;
-    let isInitialOrderLoad = true;
-
     window.onload = function() {
         // Listen to Realtime Product Changes in Firebase
         db.ref('products').on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data === null && isInitialProductLoad) {
-                // If completely empty on first load, seed data
-                saveProductsDB(defaultProducts);
+            if (data) {
+                // Convert Firebase object to array and filter out empty/null values
+                appProducts = (Array.isArray(data) ? data : Object.values(data)).filter(item => item !== null);
             } else {
-                // Handle Firebase array objects smoothly
-                appProducts = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                
-                // Update UI automatically
-                renderMarketplace();
-                if (!document.getElementById("admin-dashboard-view").classList.contains("hidden")) {
-                    renderAdminDashboard();
-                }
+                appProducts = [];
             }
-            isInitialProductLoad = false;
+            
+            // Update UI automatically when data comes from Firebase
+            renderMarketplace();
+            if (!document.getElementById("admin-dashboard-view").classList.contains("hidden")) {
+                renderAdminDashboard();
+            }
+        }, (error) => {
+            console.error("Firebase Read Error:", error);
+            alert("Database Error: කරුණාකර ඔබගේ Firebase එකේ Rules වල .read සහ .write 'true' කර ඇතිදැයි පරීක්ෂා කරන්න.");
         });
 
         // Listen to Realtime Order Changes in Firebase
         db.ref('orders').on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data === null && isInitialOrderLoad) {
-                saveOrdersDB(defaultOrders);
+            if (data) {
+                appOrders = (Array.isArray(data) ? data : Object.values(data)).filter(item => item !== null);
             } else {
-                appOrders = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-                if (!document.getElementById("admin-dashboard-view").classList.contains("hidden")) {
-                    renderAdminDashboard();
-                }
+                appOrders = [];
             }
-            isInitialOrderLoad = false;
+            if (!document.getElementById("admin-dashboard-view").classList.contains("hidden")) {
+                renderAdminDashboard();
+            }
         });
     };
 
@@ -381,7 +348,7 @@
         container.innerHTML = "";
 
         products.forEach((prod, index) => {
-            if (!prod) return; // Skip empty elements
+            if (!prod) return; 
             if (currentCategoryFilter !== "All" && prod.category !== currentCategoryFilter) return;
 
             const card = document.createElement("div");
