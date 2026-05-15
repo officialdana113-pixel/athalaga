@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>අතළඟ | Online Marketplace</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap');
         
@@ -177,23 +181,22 @@
                         <input type="tel" id="form-item-wa-direct" placeholder="eg: 94742517405" class="w-full border p-3 rounded-xl outline-none bg-orange-50 focus:bg-white border-orange-200 font-bold">
                     </div>
                     <div>
-    <label class="text-xs font-bold text-gray-600 block mb-1">වර්ගීකරණය (Category) *</label>
-    <input type="text" id="form-item-category" list="hot-categories" placeholder="eg: Gadgets / Fashion" class="w-full border p-3 rounded-xl outline-none bg-gray-50 focus:bg-white border-gray-200">
-    
-    <datalist id="hot-categories">
-        <option value="Gadgets & Tech">
-        <option value="Home & Lifestyle">
-        <option value="Health & Wellness">
-        <option value="Fashion & Personal Care">
-        <option value="Baby & Kids">
-        <option value="Pet Care">
-        <option value="Stationery & Gifts">
-        <option value="Kitchen">
-        <option value="Electronics">
-        <option value="Beauty">
-        <option value="Home Decor">
-    </datalist>
-</div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">වර්ගීකරණය (Category) *</label>
+                        <input type="text" id="form-item-category" list="hot-categories" placeholder="eg: Gadgets / Fashion" class="w-full border p-3 rounded-xl outline-none bg-gray-50 focus:bg-white border-gray-200">
+                        <datalist id="hot-categories">
+                            <option value="Gadgets & Tech">
+                            <option value="Home & Lifestyle">
+                            <option value="Health & Wellness">
+                            <option value="Fashion & Personal Care">
+                            <option value="Baby & Kids">
+                            <option value="Pet Care">
+                            <option value="Stationery & Gifts">
+                            <option value="Kitchen">
+                            <option value="Electronics">
+                            <option value="Beauty">
+                            <option value="Home Decor">
+                        </datalist>
+                    </div>
                     <div>
                         <label class="text-xs font-bold text-gray-600 block mb-1">ප්‍රධාන ඡායාරූපය (Main Image URL) *</label>
                         <input type="text" id="form-item-img1" placeholder="https://images.unsplash.com/..." class="w-full border p-2.5 rounded-xl outline-none text-xs bg-gray-50 border-gray-200">
@@ -253,12 +256,31 @@
 </button>
 
 <script>
+    // --- FIREBASE INITIALIZATION & CONFIGURATION ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyC8-d_UM6p1UK7P4hs_hfbqYos11lAM8Xk",
+        authDomain: "athalaga-6278b.firebaseapp.com",
+        databaseURL: "https://athalaga-6278b-default-rtdb.firebaseio.com",
+        projectId: "athalaga-6278b",
+        storageBucket: "athalaga-6278b.firebasestorage.app",
+        messagingSenderId: "181947738134",
+        appId: "1:181947738134:web:a7ae7945f8e80aea4fed37",
+        measurementId: "G-WY1S5PGE26"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     // System Core Configurations
     const DEFAULT_WHATSAPP_PHONE = "94742517405";
     let selectedProductIndex = null;
     let currentCategoryFilter = "All";
 
-    // Initial Data Set - Seed sample data if local database is empty
+    // Global Data Arrays (Synced with Firebase)
+    let appProducts = [];
+    let appOrders = [];
+
+    // Initial Data Set (Used only if Firebase DB is completely empty)
     const defaultProducts = [
         {
             name: "Mini Vegetable Chopper (Rechargeable)",
@@ -271,29 +293,6 @@
             ],
             youtube: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
             desc: "USB මඟින් පහසුවෙන් චාර්ජ් කර පාවිච්චි කල හැකි කුඩා එළවළු මෙන්ම ළූණු කපනයකි. ගෘහණියන්ගේ කුස්සියේ වැඩ පහසු කිරීමට කදිමයි."
-        },
-        {
-            name: "LED Professional Ring Light 10 Inch",
-            price: "Rs. 2,800",
-            category: "Electronics",
-            whatsapp: "94742517405",
-            images: [
-                "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?w=500",
-                "https://images.unsplash.com/photo-1619551483344-fbb9f211b85e?w=500"
-            ],
-            youtube: "",
-            desc: "TikTok, YouTube, Facebook Reels වීඩියෝ කරන අයට මුහුණ පැහැදිලිව ආලෝකමත් කරගැනීමට ලැබෙන විශිෂ්ට Ring light එකක්. මට්ටම් 3ක ආලෝක පාලනයක් ඇත."
-        },
-        {
-            name: "Aesthetic Scented Soy Candle Pack",
-            price: "Rs. 950",
-            category: "Home Decor",
-            whatsapp: "94742517405",
-            images: [
-                "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=500"
-            ],
-            youtube: "",
-            desc: "කාමරයේ සුන්දරත්වය මෙන්ම ඉතා සුවඳවත් වටපිටාවක් නිර්මාණය කරන ස්වභාවික සෝයා ඉටි මඟින් නිපදවූ ඉටිපන්දම් කට්ටලයකි."
         }
     ];
 
@@ -311,35 +310,64 @@
         }
     ];
 
-    // Read and Write Controllers to Synchronize Database with Browser Cache
+    // --- FIREBASE SYNC FUNCTIONS (Replacing Local Storage) ---
     function getProductsDB() {
-        if (!localStorage.getItem("atalanga_products")) {
-            localStorage.setItem("atalanga_products", JSON.stringify(defaultProducts));
-        }
-        return JSON.stringify(localStorage.getItem("atalanga_products")) === "[]" ? [] : JSON.parse(localStorage.getItem("atalanga_products"));
+        return appProducts || [];
     }
 
     function saveProductsDB(arr) {
-        localStorage.setItem("atalanga_products", JSON.stringify(arr));
+        db.ref('products').set(arr);
     }
 
     function getOrdersDB() {
-        if (!localStorage.getItem("atalanga_orders")) {
-            localStorage.setItem("atalanga_orders", JSON.stringify(defaultOrders));
-        }
-        return JSON.parse(localStorage.getItem("atalanga_orders"));
+        return appOrders || [];
     }
 
     function saveOrdersDB(arr) {
-        localStorage.setItem("atalanga_orders", JSON.stringify(arr));
+        db.ref('orders').set(arr);
     }
 
-    // App Initialization Hook
+    // App Initialization Hook (Realtime Listeners)
+    let isInitialProductLoad = true;
+    let isInitialOrderLoad = true;
+
     window.onload = function() {
-        renderMarketplace();
+        // Listen to Realtime Product Changes in Firebase
+        db.ref('products').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data === null && isInitialProductLoad) {
+                // If completely empty on first load, seed data
+                saveProductsDB(defaultProducts);
+            } else {
+                // Handle Firebase array objects smoothly
+                appProducts = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                
+                // Update UI automatically
+                renderMarketplace();
+                if (!document.getElementById("admin-dashboard-view").classList.contains("hidden")) {
+                    renderAdminDashboard();
+                }
+            }
+            isInitialProductLoad = false;
+        });
+
+        // Listen to Realtime Order Changes in Firebase
+        db.ref('orders').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data === null && isInitialOrderLoad) {
+                saveOrdersDB(defaultOrders);
+            } else {
+                appOrders = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+                if (!document.getElementById("admin-dashboard-view").classList.contains("hidden")) {
+                    renderAdminDashboard();
+                }
+            }
+            isInitialOrderLoad = false;
+        });
     };
 
-    // New Function: Contact to Sell
+    // --- EXISTING APPLICATION LOGIC ---
+
     function contactToSell() {
         const sellMsg = `*අතළඟ (Atalanga) - භාණ්ඩ විකිණීමේ විමසීම*%0A` +
                         `-------------------------------------------%0A` +
@@ -347,14 +375,13 @@
         window.open(`https://wa.me/${DEFAULT_WHATSAPP_PHONE}?text=${sellMsg}`, '_blank');
     }
 
-    // Render Products on Frontend
     function renderMarketplace() {
         const products = getProductsDB();
         const container = document.getElementById("product-list-container");
         container.innerHTML = "";
 
         products.forEach((prod, index) => {
-            // Apply category filter logic
+            if (!prod) return; // Skip empty elements
             if (currentCategoryFilter !== "All" && prod.category !== currentCategoryFilter) return;
 
             const card = document.createElement("div");
@@ -385,7 +412,6 @@
         }
     }
 
-    // Category Selector
     function filterCategory(catName) {
         currentCategoryFilter = catName;
         const buttons = document.querySelectorAll(".category-btn");
@@ -400,7 +426,6 @@
         renderMarketplace();
     }
 
-    // Live Instant Search Bar Filter
     function searchProducts() {
         const query = document.getElementById("search-input").value.toLowerCase();
         const products = getProductsDB();
@@ -408,7 +433,8 @@
         container.innerHTML = "";
 
         products.forEach((prod, index) => {
-            if (!prod.name.toLowerCase().includes(query) && !prod.desc.toLowerCase().includes(query)) return;
+            if (!prod) return;
+            if (!prod.name.toLowerCase().includes(query) && (!prod.desc || !prod.desc.toLowerCase().includes(query))) return;
 
             const card = document.createElement("div");
             card.className = "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden product-card cursor-pointer flex flex-col justify-between";
@@ -432,17 +458,16 @@
         });
     }
 
-    // Open Product Deep Detailed Modal View
     function openProductModal(index) {
         const products = getProductsDB();
         const prod = products[index];
+        if(!prod) return;
         selectedProductIndex = index;
 
         document.getElementById("modal-item-title").innerText = prod.name;
         document.getElementById("modal-item-price").innerText = prod.price;
         document.getElementById("modal-item-details").innerText = prod.desc || "විස්තර ඇතුළත් කර නොමැත.";
 
-        // Populate Images Grid up to 5 pictures
         const gallery = document.getElementById("modal-image-gallery");
         gallery.innerHTML = "";
         
@@ -456,7 +481,6 @@
             gallery.appendChild(imgTag);
         });
 
-        // Parse & Load YouTube Video Iframe Embedded securely 
         const videoSection = document.getElementById("modal-video-container");
         const iframe = document.getElementById("modal-iframe");
         
@@ -484,10 +508,9 @@
 
     function closeProductModal() {
         document.getElementById("product-detail-modal").classList.add("hidden");
-        document.getElementById("modal-iframe").src = ""; // Stop audio playing
+        document.getElementById("modal-iframe").src = ""; 
     }
 
-    // Submit Order Form Action Controller
     function submitOrder() {
         const name = document.getElementById("order-name").value.trim();
         const address = document.getElementById("order-address").value.trim();
@@ -503,13 +526,10 @@
         const products = getProductsDB();
         const orderedItem = products[selectedProductIndex];
 
-        // Custom Logic: Determine target WhatsApp number for this product
         const targetWhatsApp = (orderedItem.whatsapp && orderedItem.whatsapp.trim() !== "") ? orderedItem.whatsapp : DEFAULT_WHATSAPP_PHONE;
 
-        // Unique identification generation 
         const orderId = "ORD-" + Math.floor(1000 + Math.random() * 9000);
 
-        // Store internally inside dashboard structure 
         const newOrder = {
             id: orderId,
             item: orderedItem.name,
@@ -524,9 +544,8 @@
 
         const currentOrders = getOrdersDB();
         currentOrders.push(newOrder);
-        saveOrdersDB(currentOrders);
+        saveOrdersDB(currentOrders); // This triggers Firebase save
 
-        // Build elegant WhatsApp Text Message 
         const msgStr = `*අතළඟ (Atalanga) - නව ඇණවුම*%0A` +
                        `-------------------------------------------%0A` +
                        `*ඇණවුම් අංකය:* ${orderId}%0A` +
@@ -541,10 +560,8 @@
                        `-------------------------------------------%0A` +
                        `ස්තූතියි!`;
 
-        // Redirect seamlessly to API interface
         window.open(`https://wa.me/${targetWhatsApp}?text=${msgStr}`, '_blank');
         
-        // Reset and wrap up modal
         document.getElementById("order-name").value = "";
         document.getElementById("order-address").value = "";
         document.getElementById("order-city").value = "";
@@ -554,7 +571,6 @@
         alert("ඔබේ ඇණවුම සාර්ථකව පද්ධතියට ලැබුණා! දැන් WhatsApp මඟින් තහවුරු කරන්න.");
     }
 
-    // --- ADMIN SUBSYSTEM OPERATIONS ---
     function openLoginModal() { document.getElementById("login-modal").classList.remove("hidden"); }
     function closeLoginModal() { document.getElementById("login-modal").classList.add("hidden"); }
 
@@ -579,14 +595,13 @@
         document.getElementById("admin-pass").value = "";
     }
 
-    // Render Admin Control Dashboard Tables
     function renderAdminDashboard() {
-        // Render Active Stock Management Table Row Blocks
         const products = getProductsDB();
         const inventoryTable = document.getElementById("admin-inventory-table");
         inventoryTable.innerHTML = "";
 
         products.forEach((prod, idx) => {
+            if (!prod) return;
             const tr = document.createElement("tr");
             tr.className = "border-b text-sm text-gray-700 hover:bg-gray-50";
             const mainImg = (prod.images && prod.images[0]) ? prod.images[0] : "https://via.placeholder.com/50?text=No+Photo";
@@ -603,7 +618,6 @@
             inventoryTable.appendChild(tr);
         });
 
-        // Render Received Customer Orders Feed
         const orders = getOrdersDB();
         const ordersContainer = document.getElementById("admin-orders-container");
         ordersContainer.innerHTML = "";
@@ -613,6 +627,7 @@
         }
 
         orders.forEach((ord, idx) => {
+            if (!ord) return;
             const ordBox = document.createElement("div");
             ordBox.className = `p-4 rounded-xl border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white ${ord.status === 'Shipped' ? 'border-gray-200 opacity-60' : 'border-orange-200 bg-orange-50/20'}`;
             
@@ -635,12 +650,11 @@
         });
     }
 
-    // Save/Add New Stock Product Submission Form Handler
     function saveNewProduct() {
         const name = document.getElementById("form-item-name").value.trim();
         const price = document.getElementById("form-item-price").value.trim();
         const category = document.getElementById("form-item-category").value.trim(); 
-        const whatsapp = document.getElementById("form-item-wa-direct").value.trim(); // New Custom WhatsApp Field
+        const whatsapp = document.getElementById("form-item-wa-direct").value.trim();
         const desc = document.getElementById("form-item-desc").value.trim();
         const youtube = document.getElementById("form-item-youtube").value.trim();
 
@@ -660,9 +674,8 @@
         const newProd = { name, price, category, whatsapp, images, youtube, desc };
         const currentProducts = getProductsDB();
         currentProducts.push(newProd);
-        saveProductsDB(currentProducts);
+        saveProductsDB(currentProducts); // Sends to Firebase
 
-        // Form එක Reset කිරීම
         document.getElementById("form-item-name").value = "";
         document.getElementById("form-item-price").value = "";
         document.getElementById("form-item-category").value = "";
@@ -676,36 +689,27 @@
         document.getElementById("form-item-img5").value = "";
         
         alert("භාණ්ඩය සාර්ථකව පද්ධතියට එක් කළා!");
-        renderAdminDashboard();
-        renderMarketplace();
     }
 
-    // Inventory Product Deletion Control
     function deleteProduct(index) {
         if (confirm("මෙම භාණ්ඩය ස්ථිරවම ඉවත් කිරීමට අවශ්‍යද?")) {
             const currentProducts = getProductsDB();
             currentProducts.splice(index, 1);
-            saveProductsDB(currentProducts);
-            renderAdminDashboard();
-            renderMarketplace();
+            saveProductsDB(currentProducts); // Sends updated array to Firebase
         }
     }
 
-    // Order Fulfillment Status Update Controls
     function markAsShipped(index) {
         const currentOrders = getOrdersDB();
         currentOrders[index].status = "Shipped";
-        saveOrdersDB(currentOrders);
-        renderAdminDashboard();
+        saveOrdersDB(currentOrders); // Sends update to Firebase
     }
 
-    // Order Log Entry Deletion Controls
     function deleteOrder(index) {
         if (confirm("මෙම ඇණවුම් දත්තය පද්ධතියෙන් ස්ථිරවම ඉවත් කරන්නද?")) {
             const currentOrders = getOrdersDB();
             currentOrders.splice(index, 1);
-            saveOrdersDB(currentOrders);
-            renderAdminDashboard();
+            saveOrdersDB(currentOrders); // Sends updated array to Firebase
         }
     }
 </script>
